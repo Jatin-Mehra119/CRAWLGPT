@@ -38,3 +38,22 @@ class VectorDatabase:
         distances, indices = self.index.search(np.array(query_embedding).astype("float32"), top_k)
         results = [self.data[i] for i in indices[0] if i < len(self.data)]
         return results
+
+    def to_dict(self) -> Dict:
+        """
+        Converts the internal state of the vector database to a dictionary format.
+        """
+        return {
+            "data": self.data,
+            "index": self.index.reconstruct_n(0, self.index.ntotal).tolist()
+        }
+
+    def from_dict(self, state: Dict) -> None:
+        """
+        Restores the internal state of the vector database from a dictionary format.
+        Args:
+            state (Dict): The state to restore.
+        """
+        self.data = state["data"]
+        embeddings = np.array(state["index"]).astype("float32")
+        self.index.add(embeddings)

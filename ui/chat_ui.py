@@ -53,6 +53,7 @@ with st.sidebar:
     if uploaded_file is not None:
         try:
             imported_data = st.session_state.data_manager.import_data(uploaded_file)
+            model.import_state(imported_data)
             st.success("Data imported successfully!")
         except Exception as e:
             st.error(f"Import failed: {e}")
@@ -125,7 +126,12 @@ if st.button("Extract and Store Content"):
         except Exception as e:
             st.error(f"Error extracting content: {e}")
 
-# Query section with metrics tracking
+# Query section with RAG type selection
+rag_type = st.radio(
+    "Select RAG Type:",
+    ("Normal RAG", "Summarized RAG")
+)
+
 query = st.text_input("Ask a question:", help="Enter a query to retrieve context and generate a response.")
 temperature = st.slider("Temperature", 0.0, 1.0, 0.7)
 max_tokens = st.slider("Max Tokens", 50, 1000, 200)
@@ -138,13 +144,22 @@ if st.button("Get Response"):
         try:
             start_time = time.time()
             
-            response = model.generate_response(
-                query, 
-                temperature, 
-                max_tokens, 
-                model_id, 
-                use_summary=st.session_state.use_summary
-            )
+            if rag_type == "Normal RAG":
+                response = model.generate_response(
+                    query, 
+                    temperature, 
+                    max_tokens, 
+                    model_id, 
+                    use_summary=False
+                )
+            else:
+                response = model.generate_response(
+                    query, 
+                    temperature, 
+                    max_tokens, 
+                    model_id, 
+                    use_summary=True
+                )
             
             # Record metrics
             st.session_state.metrics.record_request(

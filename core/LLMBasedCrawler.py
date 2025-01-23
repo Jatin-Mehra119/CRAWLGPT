@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 # Internal imports
 from core.DatabaseHandler import VectorDatabase
 from core.SummaryGenerator import SummaryGenerator
-from utils.monitoring import MetricsCollector, RateLimiter
+from utils.monitoring import MetricsCollector, RateLimiter, Metrics
 from utils.progress import ProgressTracker
 from utils.data_manager import DataManager
 from utils.content_validator import ContentValidator
@@ -254,3 +254,8 @@ class Model:
             "metrics": self.metrics_collector.metrics.to_dict(),
             "vector_database": self.database.to_dict()
         }, "model_state")
+    
+    def import_state(self, state: Dict) -> None:
+        """Imports the state of the model including metrics."""
+        self.metrics_collector.metrics = Metrics(**state["metrics"])
+        self.database.from_dict(state["vector_database"])
