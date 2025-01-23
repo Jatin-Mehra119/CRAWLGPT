@@ -3,10 +3,11 @@ import asyncio
 import time
 from datetime import datetime
 from core.LLMBasedCrawler import Model
-from utils.monitoring import MetricsCollector
+from utils.monitoring import MetricsCollector, Metrics
 from utils.progress import ProgressTracker
 from utils.data_manager import DataManager
 from utils.content_validator import ContentValidator
+import json
 
 # Streamlit app title and description
 st.title("CrawlGPT 🚀🤖")
@@ -41,18 +42,32 @@ with st.sidebar:
     st.subheader("💾 Data Management")
     if st.button("Export Current State"):
         try:
-            export_path = st.session_state.data_manager.export_data({
+            export_data = {
                 "metrics": metrics,
                 "vector_database": model.database.to_dict()
-            }, f"crawlgpt_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
-            st.success(f"Data exported to: {export_path}")
+            }
+            export_json = json.dumps(export_data)
+            st.session_state.export_json = export_json
+            st.success("Data exported successfully!")
         except Exception as e:
             st.error(f"Export failed: {e}")
 
-    uploaded_file = st.file_uploader("Import Previous State", type=['json', 'pkl'])
+    if "export_json" in st.session_state:
+        st.download_button(
+            label="Download Backup",
+            data=st.session_state.export_json,
+            file_name=f"crawlgpt_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+            mime="application/json"
+        )
+
+    uploaded_file = st.file_uploader("Import Previous State", type=['json'])
     if uploaded_file is not None:
         try:
-            imported_data = st.session_state.data_manager.import_data(uploaded_file)
+            # Read the uploaded file content
+            uploaded_file_content = uploaded_file.read()
+            # Parse the JSON content
+            imported_data = json.loads(uploaded_file_content)
+            # Import the state
             model.import_state(imported_data)
             st.success("Data imported successfully!")
         except Exception as e:

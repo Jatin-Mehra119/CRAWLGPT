@@ -257,5 +257,5 @@ class Model:
     
     def import_state(self, state: Dict) -> None:
         """Imports the state of the model including metrics."""
-        self.metrics_collector.metrics = Metrics(**state["metrics"])
+        self.metrics_collector.metrics = Metrics.from_dict(state["metrics"])
         self.database.from_dict(state["vector_database"])
