@@ -1,5 +1,4 @@
 import unittest
-import asyncio
 from unittest.mock import AsyncMock, MagicMock
 from core.LLMBasedCrawler import Model
 from core.DatabaseHandler import VectorDatabase
@@ -16,7 +15,7 @@ class TestIntegration(unittest.TestCase):
         self.model.summarizer.generate_summary = MagicMock(side_effect=lambda chunk: f"Summary of {chunk}")
         self.model.database = VectorDatabase()
 
-    async def async_test_end_to_end_flow(self):
+    async def test_end_to_end_flow(self):
         """
         Test the full pipeline: URL extraction, summarization, and response generation.
         """
@@ -35,12 +34,6 @@ class TestIntegration(unittest.TestCase):
         response = self.model.generate_response(query, temperature=0.5, max_tokens=100, model="llama-3.1-8b-instant")
         self.assertIsInstance(response, str)
         self.assertGreater(len(response), 0)
-
-    def test_end_to_end_flow(self):
-        """
-        Wrapper to run the asynchronous test using asyncio.run().
-        """
-        asyncio.run(self.async_test_end_to_end_flow())
 
 
 if __name__ == "__main__":
