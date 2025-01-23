@@ -11,7 +11,7 @@ class TestIntegration(unittest.TestCase):
         Set up the integration test environment.
         """
         self.model = Model()
-        self.model.chunk_text = MagicMock(return_value=["Chunk 1", "Chunk 2"])
+        self.model.chunk_text = MagicMock(return_value=["Chunk 1", "Chunk 2", "Chunk 3"])
         self.model.summarizer = MagicMock()
         self.model.summarizer.generate_summary = MagicMock(side_effect=lambda chunk: f"Summary of {chunk}")
         self.model.database = VectorDatabase()
@@ -20,19 +20,28 @@ class TestIntegration(unittest.TestCase):
         """
         Test the full pipeline: URL extraction, summarization, and response generation.
         """
+        # Debugging: Display the test flow
+        print("[DEBUG] Starting end-to-end test.")
+
         # Mock URL content extraction
         url = "https://example.com"
+        print(f"[DEBUG] Mocking content extraction for URL: {url}")
         self.model.extract_content_from_url = AsyncMock(return_value=None)
 
         # Extract content
         await self.model.extract_content_from_url(url)
+        print("[DEBUG] Content extracted successfully.")
 
         # Validate database contents
-        self.assertGreater(len(self.model.database.data), 0)
+        database_size = len(self.model.database.data)
+        print(f"[DEBUG] Database contains {database_size} entries.")
+        self.assertGreater(database_size, 0)
 
         # Generate a query response
         query = "What is the test about?"
+        print(f"[DEBUG] Generating response for query: {query}")
         response = self.model.generate_response(query, temperature=0.5, max_tokens=100, model="llama-3.1-8b-instant")
+        print(f"[DEBUG] Query response: {response}")
         self.assertIsInstance(response, str)
         self.assertGreater(len(response), 0)
 
