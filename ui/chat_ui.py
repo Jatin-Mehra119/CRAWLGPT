@@ -1,6 +1,12 @@
 import streamlit as st
 import asyncio
+import time
+from datetime import datetime
 from core.LLMBasedCrawler import Model
+from utils.monitoring import MetricsCollector
+from utils.progress import ProgressTracker
+from utils.data_manager import DataManager
+from utils.content_validator import ContentValidator
 
 # Streamlit app title and description
 st.title("CrawlGPT 🚀🤖")
@@ -9,14 +15,47 @@ st.write(
     "It also summarizes extracted content for efficient retrieval."
 )
 
-# Initialize the Model object in session state
+# Initialize components in session state
 if "model" not in st.session_state:
     st.session_state.model = Model()
+    st.session_state.data_manager = DataManager()
+    st.session_state.content_validator = ContentValidator()
 
 if "use_summary" not in st.session_state:
-    st.session_state.use_summary = True  # Default to summarization-based RAG
+    st.session_state.use_summary = True
 
-model = st.session_state.model  # Access the persistent Model object
+if "metrics" not in st.session_state:
+    st.session_state.metrics = MetricsCollector()
+
+model = st.session_state.model
+
+# Sidebar for metrics and monitoring
+with st.sidebar:
+    st.subheader("📊 System Metrics")
+    metrics = st.session_state.metrics.metrics.to_dict()
+    st.metric("Total Requests", metrics["total_requests"])
+    st.metric("Success Rate", f"{(metrics['successful_requests']/max(metrics['total_requests'], 1))*100:.1f}%")
+    st.metric("Avg Response Time", f"{metrics['average_response_time']:.2f}s")
+    
+    # Export/Import Data
+    st.subheader("💾 Data Management")
+    if st.button("Export Current State"):
+        try:
+            export_path = st.session_state.data_manager.export_data({
+                "metrics": metrics,
+                "vector_database": model.database.to_dict()
+            }, f"crawlgpt_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+            st.success(f"Data exported to: {export_path}")
+        except Exception as e:
+            st.error(f"Export failed: {e}")
+
+    uploaded_file = st.file_uploader("Import Previous State", type=['json', 'pkl'])
+    if uploaded_file is not None:
+        try:
+            imported_data = st.session_state.data_manager.import_data(uploaded_file)
+            st.success("Data imported successfully!")
+        except Exception as e:
+            st.error(f"Import failed: {e}")
 
 # URL input and content extraction
 url = st.text_input("Enter URL:", help="Provide the URL to extract content from.")
@@ -25,36 +64,80 @@ if st.button("Extract and Store Content"):
     if not url.strip():
         st.warning("Please enter a valid URL.")
     else:
+        # Create a progress bar
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        
         try:
-            async def extract_content():
-                await model.extract_content_from_url(url)
-                st.success("Content extracted and stored successfully.")
-                st.write("Extracted Content Preview:")
-                st.write(model.context[:500])  # Display the first 500 characters for debugging
+            # Validate URL
+            if not st.session_state.content_validator.is_valid_url(url):
+                st.error("Invalid URL format")
+            else:
+                async def extract_content():
+                    start_time = time.time()
+                    
+                    # Initialize progress tracker
+                    progress = ProgressTracker(
+                        total_steps=4,
+                        operation_name="content_extraction"
+                    )
+                    
+                    try:
+                        # Update progress for each step
+                        status_text.text("Validating URL...")
+                        progress_bar.progress(25)
+                        
+                        status_text.text("Crawling content...")
+                        progress_bar.progress(50)
+                        await model.extract_content_from_url(url)
+                        
+                        status_text.text("Processing content...")
+                        progress_bar.progress(75)
+                        
+                        status_text.text("Storing in database...")
+                        progress_bar.progress(100)
+                        
+                        # Record metrics
+                        st.session_state.metrics.record_request(
+                            success=True,
+                            response_time=time.time() - start_time,
+                            tokens_used=len(model.context.split())
+                        )
+                        
+                        st.success("Content extracted and stored successfully.")
+                        st.write("Extracted Content Preview:")
+                        st.write(model.context[:500])
+                        
+                    except Exception as e:
+                        st.session_state.metrics.record_request(
+                            success=False,
+                            response_time=time.time() - start_time,
+                            tokens_used=0
+                        )
+                        raise e
+                    finally:
+                        status_text.empty()
+                        progress_bar.empty()
 
-            # Run the asynchronous function
-            asyncio.run(extract_content())
+                # Run the asynchronous function
+                asyncio.run(extract_content())
+                
         except Exception as e:
             st.error(f"Error extracting content: {e}")
 
-# Toggle for summarization vs. normal RAG
-st.session_state.use_summary = st.radio(
-    "Select Retrieval Mode:",
-    ("Summarization-based RAG", "Normal RAG"),
-    index=0 if st.session_state.use_summary else 1
-) == "Summarization-based RAG"
-
-# Query input and response generation
+# Query section with metrics tracking
 query = st.text_input("Ask a question:", help="Enter a query to retrieve context and generate a response.")
-temperature = st.slider("Temperature", 0.0, 1.0, 0.7, help="Adjust the randomness of the LLM's responses.")
-max_tokens = st.slider("Max Tokens", 50, 1000, 200, help="Set the maximum number of tokens for the response.")
-model_id = st.text_input("Model ID", "llama-3.1-8b-instant", help="Specify the LLM model ID to use.")
+temperature = st.slider("Temperature", 0.0, 1.0, 0.7)
+max_tokens = st.slider("Max Tokens", 50, 1000, 200)
+model_id = st.text_input("Model ID", "llama-3.1-8b-instant")
 
 if st.button("Get Response"):
     if not query.strip():
         st.warning("Please enter a query.")
     else:
         try:
+            start_time = time.time()
+            
             response = model.generate_response(
                 query, 
                 temperature, 
@@ -62,22 +145,51 @@ if st.button("Get Response"):
                 model_id, 
                 use_summary=st.session_state.use_summary
             )
+            
+            # Record metrics
+            st.session_state.metrics.record_request(
+                success=True,
+                response_time=time.time() - start_time,
+                tokens_used=len(response.split())
+            )
+            
             st.write("Generated Response:")
             st.write(response)
+            
         except Exception as e:
+            st.session_state.metrics.record_request(
+                success=False,
+                response_time=time.time() - start_time,
+                tokens_used=0
+            )
             st.error(f"Error generating response: {e}")
 
-# Clear context and database
-if st.button("Clear Context and Cache"):
-    try:
-        model.clear()
-        st.success("Context and cache cleared successfully.")
-    except Exception as e:
-        st.error(f"Error clearing context and cache: {e}")
-
-# Additional debugging and information
+# Enhanced debug section
 if st.checkbox("Show Debug Info"):
-    st.write("Current Context:")
-    st.write(model.context[:500])  # Display the first 500 characters of the context
-    st.write("Cache Information:")
-    st.write(model.cache)
+    st.subheader("🔍 Debug Information")
+    
+    # System Status
+    st.write("System Status:")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.write("Cache Information:")
+        st.write(model.cache)
+    
+    with col2:
+        st.write("Current Metrics:")
+        st.write(metrics)
+    
+    # Content Preview
+    st.write("Current Context Preview:")
+    st.write(model.context[:500])
+
+# Clear functionality with confirmation
+if st.button("Clear All Data"):
+    if st.checkbox("Confirm Clear"):
+        try:
+            model.clear()
+            st.session_state.metrics = MetricsCollector()  # Reset metrics
+            st.success("All data cleared successfully.")
+        except Exception as e:
+            st.error(f"Error clearing data: {e}")
