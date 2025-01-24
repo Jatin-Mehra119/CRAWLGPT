@@ -1,3 +1,6 @@
+# This file is only used for Streamlit UI development and testing.
+# It is not part of the main application.
+
 import streamlit as st
 import asyncio
 import time

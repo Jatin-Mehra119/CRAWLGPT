@@ -32,6 +32,12 @@ class TestIntegration(unittest.TestCase):
         await self.model.extract_content_from_url(url)
         print("[DEBUG] Content extracted successfully.")
 
+        # Simulate adding data to the database
+        chunks = self.model.chunk_text("Example text for testing.")
+        for chunk in chunks:
+            summary = self.model.summarizer.generate_summary(chunk)
+            self.model.database.add_data([chunk], [summary])
+
         # Validate database contents
         database_size = len(self.model.database.data)
         print(f"[DEBUG] Database contains {database_size} entries.")

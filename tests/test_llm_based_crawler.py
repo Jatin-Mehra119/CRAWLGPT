@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import AsyncMock, MagicMock
 from core.LLMBasedCrawler import Model
+import asyncio
 
 
 class TestModel(unittest.TestCase):
@@ -40,7 +41,7 @@ class TestModel(unittest.TestCase):
             self.model.database.add_data.assert_called()
             print("[DEBUG] Data successfully added to database.")
 
-        asyncio.run(test_crawl())
+            asyncio.run(test_crawl())
 
 
 if __name__ == "__main__":

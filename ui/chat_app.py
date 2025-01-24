@@ -1,3 +1,4 @@
+# Description: Streamlit app for the chat interface of the CrawlGPT system.
 import streamlit as st
 import asyncio
 import time
