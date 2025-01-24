@@ -8,10 +8,6 @@ from utils.progress import ProgressTracker
 from utils.data_manager import DataManager
 from utils.content_validator import ContentValidator
 import json
-import logging
-
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
 
 # Streamlit app title and description
 st.title("CrawlGPT 🚀🤖")
@@ -223,15 +219,6 @@ if chat_input := st.chat_input("Ask about the content...", disabled=not st.sessi
             tokens_used=len(response.split())
         )
 
-        # Debug log for database insertion
-        try:
-            logging.debug("Attempting to insert data into the database")
-            # Insert data into the database
-            # Example: db.insert(response)
-            logging.debug("Data successfully inserted into the database")
-        except Exception as e:
-            logging.error(f"Error inserting data into the database: {e}")
-
     except Exception as e:
         st.session_state.metrics.record_request(
             success=False,
@@ -239,7 +226,6 @@ if chat_input := st.chat_input("Ask about the content...", disabled=not st.sessi
             tokens_used=0
         )
         st.error(f"Error generating response: {e}")
-        logging.error(f"Error generating response: {e}")
 
 # Debug and Clear Options
 col1, col2 = st.columns(2)
@@ -247,6 +233,8 @@ with col1:
     if st.button("Clear Chat History"):
         st.session_state.messages = []
         st.success("Chat history cleared!")
+        st.session_state.url_processed = False
+        st.rerun()
 
 with col2:
     if st.button("Clear All Data"):
