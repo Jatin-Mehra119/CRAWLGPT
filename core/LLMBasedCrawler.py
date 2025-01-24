@@ -28,16 +28,36 @@ load_dotenv()
 
 class Model:
     """
-    A class that represents a model for generating responses based on a given context and query.
-    Includes monitoring, progress tracking, and content validation capabilities.
+    A language model-based web crawler and content processor.
+    
+    This class combines web crawling, content extraction, summarization,
+    and response generation capabilities with integrated monitoring
+    and rate limiting.
+    
+    Attributes:
+        client (Groq): Groq API client
+        context (str): Current context buffer
+        cache (defaultdict): Cache for processed data
+        database (VectorDatabase): Vector storage for embeddings
+        summarizer (SummaryGenerator): Text summarization component
+        metrics_collector (MetricsCollector): Tracks usage metrics
+        rate_limiter (RateLimiter): Controls request rates
+        
+    Example:
+        >>> model = Model()
+        >>> success, msg = await model.extract_content_from_url("https://example.com")
+        >>> response = model.generate_response("What is this about?", 0.7, 100)
     """
 
     def __init__(self, rate_limit_rpm: int = 60):
         """
-        Initializes the Model object with all necessary components.
+        Initialize the model with components and configurations.
         
         Args:
-            rate_limit_rpm (int): Rate limit for requests per minute. Defaults to 60.
+            rate_limit_rpm (int): Maximum requests per minute
+            
+        Raises:
+            ValueError: If GROQ_API_KEY environment variable is not set
         """
         # Initialize API client
         api_key = os.getenv("GROQ_API_KEY")
@@ -108,13 +128,17 @@ class Model:
 
     async def extract_content_from_url(self, url: str) -> Tuple[bool, str]:
         """
-        Extracts content from a URL with progress tracking and validation.
+        Extract and process content from a URL.
         
         Args:
-            url: The URL to extract content from.
+            url (str): URL to crawl and process
             
         Returns:
-            Tuple[bool, str]: Success status and message
+            Tuple[bool, str]: (success status, status message)
+            
+        Example:
+            >>> success, msg = await model.extract_content_from_url("https://example.com")
+            >>> print(f"Success: {success}, Message: {msg}")
         """
         progress = ProgressTracker(total_steps=5, operation_name="content_extraction")
         start_time = time.time()
@@ -173,7 +197,25 @@ class Model:
         use_summary: bool = True
     ) -> str:
         """
-        Generates a response with integrated monitoring and rate limiting.
+        Generate a response based on stored context.
+        
+        Args:
+            query (str): User query
+            temperature (float): Response randomness (0-1)
+            max_tokens (int): Maximum response length
+            model (str): Model identifier
+            use_summary (bool): Use summarized context
+            
+        Returns:
+            str: Generated response
+            
+        Example:
+            >>> response = model.generate_response(
+            ...     "What is this about?",
+            ...     temperature=0.7,
+            ...     max_tokens=100,
+            ...     model="llama-3.1-8b-instant"
+            ... )
         """
         start_time = time.time()
 
@@ -209,7 +251,15 @@ class Model:
             return error_msg
 
     def _get_crawler_config(self) -> CrawlerRunConfig:
-        """Helper method to create crawler configuration."""
+        """
+        Create crawler configuration.
+        
+        Returns:
+            CrawlerRunConfig: Crawler configuration object
+            
+        Note:
+            Internal method for crawler setup
+        """
         return CrawlerRunConfig(
             cache_mode=CacheMode.BYPASS,
             word_count_threshold=1,
@@ -224,7 +274,19 @@ class Model:
         )
 
     def _prepare_messages(self, query: str, context: str) -> list:
-        """Helper method to prepare messages for the LLM."""
+        """
+        Prepare message format for LLM API.
+        
+        Args:
+            query (str): User query
+            context (str): Retrieved context
+            
+        Returns:
+            list: Formatted messages for API
+            
+        Note:
+            Internal method for message formatting
+        """
         return [
             {"role": "system", "content": f"Context: {context}"},
             {"role": "user", "content": (
@@ -236,7 +298,17 @@ class Model:
         ]
 
     def _record_metrics(self, success: bool, start_time: float, tokens: int):
-        """Helper method to record metrics."""
+        """
+        Record request metrics.
+        
+        Args:
+            success (bool): Request success status
+            start_time (float): Request start timestamp
+            tokens (int): Tokens used
+            
+        Note:
+            Internal method for metrics tracking
+        """
         self.metrics_collector.record_request(
             success=success,
             response_time=time.time() - start_time,
@@ -244,18 +316,40 @@ class Model:
         )
 
     def clear(self):
-        """Clears the current context and resets the cache."""
+        """
+        Clear context and cache.
+        
+        Example:
+            >>> model.clear()  # Reset model state
+        """
         self.context = ""
         self.cache.clear()
 
     def export_current_state(self) -> str:
-        """Exports the current state of the model including metrics."""
+        """
+        Export model state to file.
+        
+        Returns:
+            str: Path to exported state file
+            
+        Example:
+            >>> state_file = model.export_current_state()
+            >>> print(f"State saved to: {state_file}")
+        """
         return self.data_manager.export_data({
             "metrics": self.metrics_collector.metrics.to_dict(),
             "vector_database": self.database.to_dict()
         }, "model_state")
     
     def import_state(self, state: Dict) -> None:
-        """Imports the state of the model including metrics."""
+        """
+        Import model state from dictionary.
+        
+        Args:
+            state (Dict): State dictionary
+            
+        Example:
+            >>> model.import_state(loaded_state)
+        """
         self.metrics_collector.metrics = Metrics.from_dict(state["metrics"])
         self.database.from_dict(state["vector_database"])

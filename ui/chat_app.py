@@ -2,16 +2,12 @@ import streamlit as st
 import asyncio
 from core.LLMBasedCrawler import Model
 import os
-from dotenv import load_dotenv
 from datetime import datetime
 from core.LLMBasedCrawler import Model
 from utils.monitoring import MetricsCollector, Metrics
 from utils.progress import ProgressTracker
 from utils.data_manager import DataManager
 from utils.content_validator import ContentValidator
-
-# Load environment variables
-load_dotenv()
 
 # Configure Streamlit page
 st.set_page_config(

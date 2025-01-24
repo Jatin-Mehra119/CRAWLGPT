@@ -48,11 +48,35 @@ class Metrics:
         return instance
 
 class RateLimiter:
+    """
+    Implements rate limiting using a sliding window approach.
+    
+    Attributes:
+        requests_per_minute (int): Maximum allowed requests per minute
+        requests (deque): Queue storing request timestamps
+        
+    Example:
+        >>> limiter = RateLimiter(requests_per_minute=60)
+        >>> limiter.can_proceed()
+        True
+    """
     def __init__(self, requests_per_minute: int = 60):
+        """
+        Initialize rate limiter with requests per minute limit.
+        
+        Args:
+            requests_per_minute (int): Maximum allowed requests per minute
+        """
         self.requests_per_minute = requests_per_minute
         self.requests = deque()
     
     def can_proceed(self) -> bool:
+        """
+        Check if a new request can proceed based on rate limits.
+        
+        Returns:
+            bool: True if request can proceed, False otherwise
+        """
         now = time.time()
         # Remove requests older than 1 minute
         while self.requests and self.requests[0] < now - 60:
@@ -64,11 +88,30 @@ class RateLimiter:
         return False
 
 class MetricsCollector:
+    """
+    Collects and manages application metrics and rate limiting.
+    
+    Combines Metrics and RateLimiter functionality to provide
+    comprehensive monitoring capabilities.
+    
+    Example:
+        >>> collector = MetricsCollector()
+        >>> collector.record_request(success=True, response_time=0.1, tokens_used=100)
+    """
     def __init__(self):
+        """Initialize metrics collector with default Metrics and RateLimiter."""
         self.metrics = Metrics()
         self.rate_limiter = RateLimiter()
         
     def record_request(self, success: bool, response_time: float, tokens_used: int):
+        """
+        Record a request and update metrics.
+        
+        Args:
+            success (bool): Whether the request was successful
+            response_time (float): Request response time in seconds
+            tokens_used (int): Number of tokens used in the request
+        """
         self.metrics.total_requests += 1
         if success:
             self.metrics.successful_requests += 1
