@@ -269,7 +269,7 @@ class Model:
                 api_token=os.getenv("OLLAMA_API_TOKEN"),
                 temperature=0,
                 top_p=0.9,
-                max_tokens=2000
+                max_tokens=10000
             )
         )
 
