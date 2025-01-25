@@ -24,6 +24,7 @@ A powerful web content crawler with GPT-powered summarization and chat capabilit
     
 
 ## 🎥 Demo
+[streamlit-chat_app video.webm](https://github.com/user-attachments/assets/ae1ddca0-9e3e-4b00-bf21-e73bb8e6cfdf)
 
   
 _Example of CRAWLGPT in action!_
