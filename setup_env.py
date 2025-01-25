@@ -67,6 +67,7 @@ def create_env_file():
     if not env_file.exists():
         with open(env_file, "w") as f:
             f.write("GROQ_API_KEY=\n")
+            f.write("OLLAMA_API_TOKEN=\n")
         logger.info("Created .env file")
 
 def main():
