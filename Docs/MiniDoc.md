@@ -40,20 +40,20 @@ crawlgpt/
 
 ## Core Components
 
-### LLMBasedCrawler (src/crawlgpt/core/LLMBasedCrawler.py)
+### [LLMBasedCrawler](https://github.com/Jatin-Mehra119/CRAWLGPT/blob/main/src/crawlgpt/core/LLMBasedCrawler.py) (src/crawlgpt/core/LLMBasedCrawler.py)
 
 -   Main crawler class handling web content extraction and processing
 -   Integrates with Groq API for language model operations
 -   Manages content chunking, summarization and response generation
 -   Includes rate limiting and metrics collection
 
-### DatabaseHandler (src/crawlgpt/core/DatabaseHandler.py)
+### [DatabaseHandler](https://github.com/Jatin-Mehra119/CRAWLGPT/blob/main/src/crawlgpt/core/DatabaseHandler.py) (src/crawlgpt/core/DatabaseHandler.py)
 
 -   Vector database implementation using FAISS
 -   Stores and retrieves text embeddings for efficient similarity search
 -   Handles data persistence and state management
 
-### SummaryGenerator (src/crawlgpt/core/SummaryGenerator.py)
+### [SummaryGenerator](https://github.com/Jatin-Mehra119/CRAWLGPT/blob/main/src/crawlgpt/core/SummaryGenerator.py) (src/crawlgpt/core/SummaryGenerator.py)
 
 -   Generates concise summaries of text chunks using Groq API
 -   Configurable model selection and parameters
@@ -61,7 +61,7 @@ crawlgpt/
 
 ## UI Components
 
-### [chat_app.py](https://orange-memory-g4xp5wqvqvr4hrvx.github.dev/?folder=%2Fworkspaces%2FCRAWLGPT)  (src/crawlgpt/ui/chat_app.py)
+### [chat_app.py](https://github.com/Jatin-Mehra119/CRAWLGPT/blob/main/src/crawlgpt/ui/chat_app.py) (src/crawlgpt/ui/chat_app.py)
 
 -   Main Streamlit application interface
 -   URL processing and content extraction
@@ -69,7 +69,7 @@ crawlgpt/
 -   System metrics and debug information
 -   Import/export functionality
 
-### [chat_ui.py](https://orange-memory-g4xp5wqvqvr4hrvx.github.dev/?folder=%2Fworkspaces%2FCRAWLGPT)  (src/crawlgpt/ui/chat_ui.py)
+### [chat_ui.py](https://github.com/Jatin-Mehra119/CRAWLGPT/blob/main/src/crawlgpt/ui/chat_ui.py)  (src/crawlgpt/ui/chat_ui.py)
 
 -   Development/testing UI with additional debug features
 -   Extended metrics visualization
@@ -77,28 +77,28 @@ crawlgpt/
 
 ## Utilities
 
-### [content_validator.py](https://orange-memory-g4xp5wqvqvr4hrvx.github.dev/?folder=%2Fworkspaces%2FCRAWLGPT)
+### [content_validator.py](https://github.com/Jatin-Mehra119/CRAWLGPT/blob/main/src/crawlgpt/utils/content_validator.py) (src/crawlgpt/utils/content_validator.py)
 
 -   URL and content validation
 -   MIME type checking
 -   Size limit enforcement
 -   Security checks for malicious content
 
-### [data_manager.py](https://orange-memory-g4xp5wqvqvr4hrvx.github.dev/?folder=%2Fworkspaces%2FCRAWLGPT)
+### [data_manager.py](https://github.com/Jatin-Mehra119/CRAWLGPT/blob/main/src/crawlgpt/utils/data_manager.py) (src/crawlgpt/utils/data_manager.py)
 
 -   Data import/export operations
 -   File serialization (JSON/pickle)
 -   Timestamped backups
 -   State management
 
-### [monitoring.py](https://orange-memory-g4xp5wqvqvr4hrvx.github.dev/?folder=%2Fworkspaces%2FCRAWLGPT)
+### [monitoring.py](https://github.com/Jatin-Mehra119/CRAWLGPT/blob/main/src/crawlgpt/utils/monitoring.py) (src/crawlgpt/utils/monitoring.py)
 
 -   Request metrics collection
 -   Rate limiting implementation
 -   Performance monitoring
 -   Usage statistics
 
-### [progress.py](https://orange-memory-g4xp5wqvqvr4hrvx.github.dev/?folder=%2Fworkspaces%2FCRAWLGPT)
+### [progress.py](https://github.com/Jatin-Mehra119/CRAWLGPT/blob/main/src/crawlgpt/utils/progress.py) (src/crawlgpt/utils/progress.py)
 
 -   Operation progress tracking
 -   Status updates
@@ -107,25 +107,25 @@ crawlgpt/
 
 ## Testing
 
-### [test_database_handler.py](https://orange-memory-g4xp5wqvqvr4hrvx.github.dev/?folder=%2Fworkspaces%2FCRAWLGPT)
+### [test_database_handler.py](https://github.com/Jatin-Mehra119/CRAWLGPT/blob/main/tests/test_core/test_database_handler.py) (tests/test_core/test_database_handler.py)
 
 -   Tests for vector database operations
 -   Integration tests for data storage/retrieval
 -   End-to-end flow validation
 
-### [test_integration.py](https://orange-memory-g4xp5wqvqvr4hrvx.github.dev/?folder=%2Fworkspaces%2FCRAWLGPT)
+### [test_integration.py](https://github.com/Jatin-Mehra119/CRAWLGPT/blob/main/tests/test_core/test_integration.py) (tests/test_core/test_integration.py)
 
 -   Full system integration tests
 -   URL extraction to response generation flow
 -   State management validation
 
-### [test_llm_based_crawler.py](https://orange-memory-g4xp5wqvqvr4hrvx.github.dev/?folder=%2Fworkspaces%2FCRAWLGPT)
+### [test_llm_based_crawler.py](https://github.com/Jatin-Mehra119/CRAWLGPT/blob/main/tests/test_core/test_llm_based_crawler.py) (tests/test_core/test_llm_based_crawler.py)
 
 -   Crawler functionality tests
 -   Content extraction validation
 -   Response generation testing
 
-### [test_summary_generator.py](https://orange-memory-g4xp5wqvqvr4hrvx.github.dev/?folder=%2Fworkspaces%2FCRAWLGPT)
+### [test_summary_generator.py](https://github.com/Jatin-Mehra119/CRAWLGPT/blob/main/tests/test_core/test_summary_generator.py) (tests/test_core/test_summary_generator.py)
 
 -   Summary generation tests
 -   Empty input handling
@@ -133,21 +133,21 @@ crawlgpt/
 
 ## Configuration
 
-### [pyproject.toml](https://orange-memory-g4xp5wqvqvr4hrvx.github.dev/?folder=%2Fworkspaces%2FCRAWLGPT)
+### [pyproject.toml](https://github.com/Jatin-Mehra119/CRAWLGPT/blob/main/pyproject.toml)
 
 -   Project metadata
 -   Dependencies
 -   Optional dev dependencies
 -   Entry points
 
-### [pytest.ini](https://orange-memory-g4xp5wqvqvr4hrvx.github.dev/?folder=%2Fworkspaces%2FCRAWLGPT)
+### [pytest.ini](https://github.com/Jatin-Mehra119/CRAWLGPT/blob/main/pytest.ini)
 
 -   Test configuration
 -   Path settings
 -   Test discovery patterns
 -   Reporting options
 
-### [setup_env.py](https://orange-memory-g4xp5wqvqvr4hrvx.github.dev/?folder=%2Fworkspaces%2FCRAWLGPT)
+### [setup_env.py](https://github.com/Jatin-Mehra119/CRAWLGPT/blob/main/setup_env.py)
 
 -   Environment setup script
 -   Virtual environment creation
