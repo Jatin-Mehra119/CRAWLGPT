@@ -10,6 +10,13 @@ from src.crawlgpt.utils.data_manager import DataManager
 from src.crawlgpt.utils.content_validator import ContentValidator
 import json
 
+# Home Page Setup 
+st.set_page_config(
+    page_title="CrawlGPT 🚀🤖", 
+    page_icon="🤖", 
+    layout="centered",
+)
+
 # Streamlit app title and description
 st.title("CrawlGPT 🚀🤖")
 st.write(
