@@ -11,12 +11,12 @@ import logging
 from dotenv import load_dotenv
 
 # Internal imports
-from core.DatabaseHandler import VectorDatabase
-from core.SummaryGenerator import SummaryGenerator
-from utils.monitoring import MetricsCollector, RateLimiter, Metrics
-from utils.progress import ProgressTracker
-from utils.data_manager import DataManager
-from utils.content_validator import ContentValidator
+from src.crawlgpt.core.DatabaseHandler import VectorDatabase
+from src.crawlgpt.core.SummaryGenerator import SummaryGenerator
+from src.crawlgpt.utils.monitoring import MetricsCollector, RateLimiter, Metrics
+from src.crawlgpt.utils.progress import ProgressTracker
+from src.crawlgpt.utils.data_manager import DataManager
+from src.crawlgpt.utils.content_validator import ContentValidator
 
 
 # Configure logging

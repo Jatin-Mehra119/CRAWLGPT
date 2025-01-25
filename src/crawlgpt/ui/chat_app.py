@@ -3,11 +3,11 @@ import streamlit as st
 import asyncio
 import time
 from datetime import datetime
-from core.LLMBasedCrawler import Model
-from utils.monitoring import MetricsCollector, Metrics
-from utils.progress import ProgressTracker
-from utils.data_manager import DataManager
-from utils.content_validator import ContentValidator
+from src.crawlgpt.core.LLMBasedCrawler import Model
+from src.crawlgpt.utils.monitoring import MetricsCollector, Metrics
+from src.crawlgpt.utils.progress import ProgressTracker
+from src.crawlgpt.utils.data_manager import DataManager
+from src.crawlgpt.utils.content_validator import ContentValidator
 import json
 
 # Streamlit app title and description
@@ -46,7 +46,7 @@ with st.sidebar:
     st.session_state.use_summary = st.checkbox("Use Summarized RAG", value=False, help="Don't use summaization when dealing with Coding Documentation.")
     st.subheader("🤖 Normal LLM Settings")
     temperature = st.slider("Temperature", 0.0, 1.0, 0.7, help="Controls the randomness of the generated text. Lower values are more deterministic.")
-    max_tokens = st.slider("Max Tokens", 500, 10000, 200, help="Maximum number of tokens to generate in the response.")
+    max_tokens = st.slider("Max Tokens", 500, 10000, 5000, help="Maximum number of tokens to generate in the response.")
     model_id = st.radio("Model ID", ['llama-3.1-8b-instant', 'llama-3.3-70b-versatile', 'mixtral-8x7b-32768'], help="Choose the model to use for generating responses.")
     
     # Export/Import Data

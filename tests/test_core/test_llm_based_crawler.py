@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import AsyncMock, MagicMock
-from core.LLMBasedCrawler import Model
+from crawlgpt.core.LLMBasedCrawler import Model
 import asyncio
 
 

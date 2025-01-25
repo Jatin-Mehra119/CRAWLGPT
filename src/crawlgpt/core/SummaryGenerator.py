@@ -55,6 +55,12 @@ class SummaryGenerator:
         Raises:
             Exception: If API call fails or text processing errors occur
         """
+
+        # Handle empty input text
+        if not text or not text.strip():
+            return ""
+        
+        # Generate a summary using the Groq API
         messages = [
             {"role": "system", "content": "Generate a concise summary for the following text."},
             {"role": "user", "content": text},

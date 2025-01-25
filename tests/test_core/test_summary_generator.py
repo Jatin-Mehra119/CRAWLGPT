@@ -1,5 +1,5 @@
 import unittest
-from core.SummaryGenerator import SummaryGenerator
+from crawlgpt.core.SummaryGenerator import SummaryGenerator
 
 
 class TestSummaryGenerator(unittest.TestCase):

@@ -5,11 +5,11 @@ import streamlit as st
 import asyncio
 import time
 from datetime import datetime
-from core.LLMBasedCrawler import Model
-from utils.monitoring import MetricsCollector, Metrics
-from utils.progress import ProgressTracker
-from utils.data_manager import DataManager
-from utils.content_validator import ContentValidator
+from src.crawlgpt.core.LLMBasedCrawler import Model
+from src.crawlgpt.utils.monitoring import MetricsCollector, Metrics
+from src.crawlgpt.utils.progress import ProgressTracker
+from src.crawlgpt.utils.data_manager import DataManager
+from src.crawlgpt.utils.content_validator import ContentValidator
 import json
 
 # Streamlit app title and description

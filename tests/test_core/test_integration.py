@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import AsyncMock, MagicMock
-from core.LLMBasedCrawler import Model
-from core.DatabaseHandler import VectorDatabase
+from crawlgpt.core.LLMBasedCrawler import Model
+from crawlgpt.core.DatabaseHandler import VectorDatabase
 
 
 class TestIntegration(unittest.IsolatedAsyncioTestCase):  # Use IsolatedAsyncioTestCase for async tests

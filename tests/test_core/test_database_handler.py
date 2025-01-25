@@ -1,8 +1,8 @@
 import unittest
 import asyncio
 from unittest.mock import AsyncMock, MagicMock
-from core.LLMBasedCrawler import Model
-from core.DatabaseHandler import VectorDatabase
+from src.crawlgpt.core.LLMBasedCrawler import Model
+from src.crawlgpt.core.DatabaseHandler import VectorDatabase
 
 
 class TestIntegration(unittest.TestCase):

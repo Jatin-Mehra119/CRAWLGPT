@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crawlgpt"
+version = "0.1.0"
+description = "A web content crawler with GPT-powered summarization and chat capabilities"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+    {name = "Jatin Mehra", email = "jatinmehra@outlook.in"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License", 
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing :: General"
+]
+dependencies = [
+    "streamlit==1.41.1",
+    "groq==0.15.0",
+    "sentence-transformers==3.3.1",
+    "faiss-cpu==1.9.0.post1",
+    "crawl4ai==0.4.247",
+    "python-dotenv==1.0.1",
+    "pydantic==2.10.5",
+    "aiohttp==3.11.11",
+    "beautifulsoup4==4.12.3",
+    "numpy==2.2.0",
+    "tqdm==4.67.1",
+    "playwright>=1.41.0",
+    "asyncio>=3.4.3"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.4",
+    "pytest-mockito==0.0.4", 
+    "black==24.2.0",  # Updated version
+    "isort==5.13.0",
+    "flake8==7.0.0"
+]
+
+[project.urls]
+"Bug Tracker" = "https://github.com/Jatin-Mehra119/crawlgpt/issues"
+"Documentation" = "https://github.com/Jatin-Mehra119/crawlgpt/wiki"
+"Source Code" = "https://github.com/Jatin-Mehra119/crawlgpt"
+
+[project.scripts]
+crawlgpt = "crawlgpt.ui.chat_app:main"
