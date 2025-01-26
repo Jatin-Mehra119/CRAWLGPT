@@ -24,8 +24,9 @@ A powerful web content crawler with LLM-powered summarization and chat capabilit
     
 
 ## 🎥 Demo
-[streamlit-chat_app video.webm](https://github.com/user-attachments/assets/ae1ddca0-9e3e-4b00-bf21-e73bb8e6cfdf)
+### [Deployed APP 🚀🤖](https://huggingface.co/spaces/jatinmehra/CRAWL-GPT-CHAT)
 
+[streamlit-chat_app video.webm](https://github.com/user-attachments/assets/ae1ddca0-9e3e-4b00-bf21-e73bb8e6cfdf)
   
 _Example of CRAWLGPT in action!_
 
@@ -127,6 +128,9 @@ crawlgpt/
 │       ├── test_integration.py
 │       ├── test_llm_based_crawler.py
 │       └── test_summary_generator.py
+├── .github/
+│   └── workflows/
+│       └── Push_to_hf.yaml
 ├── .gitignore
 ├── LICENSE
 ├── README.md
