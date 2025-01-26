@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "crawlgpt"
 version = "0.1.0"
-description = "A web content crawler with GPT-powered summarization and chat capabilities"
+description = "A web content crawler with LLM-powered summarization and chat capabilities"
 readme = "README.md"
 requires-python = ">=3.8"
 authors = [
@@ -13,7 +13,7 @@ authors = [
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
-    "Intended Audience :: Developers",
+    "Intended Audience :: Developers and General Purpose", 
     "License :: OSI Approved :: MIT License", 
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.12",

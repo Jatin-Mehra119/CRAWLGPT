@@ -1,6 +1,6 @@
 # CRAWLGPT 🤖
 
-A powerful web content crawler with GPT-powered summarization and chat capabilities. CRAWLGPT extracts content from URLs, stores it in a vector database (FAISS), and enables natural language querying of the stored content. It combines modern web crawling technology with advanced language models to help you extract, analyze, and interact with web content intelligently.
+A powerful web content crawler with LLM-powered summarization and chat capabilities. CRAWLGPT extracts content from URLs, stores it in a vector database (FAISS), and enables natural language querying of the stored content. It combines modern web crawling technology with advanced language models to help you extract, analyze, and interact with web content intelligently.
 
 ## 🌟 Features
 
