@@ -1,27 +1,42 @@
-# CRAWLGPT 🤖
+# CrawlGPT 🤖
 
-A powerful web content crawler with LLM-powered summarization and chat capabilities. CRAWLGPT extracts content from URLs, stores it in a vector database (FAISS), and enables natural language querying of the stored content. It combines modern web crawling technology with advanced language models to help you extract, analyze, and interact with web content intelligently.
+A powerful web content crawler with LLM-powered RAG (Retrieval Augmented Generation) capabilities. CrawlGPT extracts content from URLs, processes it through intelligent summarization, and enables natural language interactions using modern LLM technology.
 
-## 🌟 Features
+## 🌟 Key Features
 
--   **Web Crawling**  
-    Async-based crawling powered by [crawl4ai](https://pypi.org/project/crawl4ai/) and Playwright.  
-    Includes configurable rate limiting and content validation.
-    
--   **Content Processing**  
-    Automatically chunks large texts, generates embeddings, and summarizes text via the Groq API.
-    
--   **Chat Interface**  
-    Streamlit-based UI with a user-friendly chat panel.  
-    Supports summarized or full-text retrieval (RAG) for context injection.
-    
--   **Data Management**  
-    Stores content in a local or in-memory vector database (FAISS) for efficient retrieval.  
-    Tracks usage metrics and supports import/export of system state.
-    
--   **Testing**  
-    Comprehensive unit and integration tests using Python’s `unittest` framework.
-    
+### Core Features
+- **Intelligent Web Crawling**
+  - Async web content extraction using Playwright
+  - Smart rate limiting and validation
+  - Configurable crawling strategies
+  
+- **Advanced Content Processing** 
+  - Automatic text chunking and summarization
+  - Vector embeddings via FAISS
+  - Context-aware response generation
+
+- **Streamlit Chat Interface**
+  - Clean, responsive UI
+  - Real-time content processing
+  - Conversation history
+  - User authentication
+
+### Technical Features
+- **Vector Database**
+  - FAISS-powered similarity search
+  - Efficient content retrieval
+  - Persistent storage
+
+- **User Management**
+  - SQLite database backend
+  - Secure password hashing
+  - Chat history tracking
+
+- **Monitoring & Utils**
+  - Request metrics collection
+  - Progress tracking
+  - Data import/export
+  - Content validation
 
 ## 🎥 Demo
 ### [Deployed APP 🚀🤖](https://huggingface.co/spaces/jatinmehra/CRAWL-GPT-CHAT)
@@ -109,35 +124,41 @@ _Example of CRAWLGPT in action!_
 crawlgpt/
 ├── src/
 │   └── crawlgpt/
-│       ├── core/
-│       │   ├── DatabaseHandler.py
-│       │   ├── LLMBasedCrawler.py 
-│       │   └── SummaryGenerator.py
-│       ├── ui/
-│       │   ├── chat_app.py
-│       │   └── chat_ui.py
-│       └── utils/
-│           ├── content_validator.py
-│           ├── data_manager.py
-│           ├── helper_functions.py
-│           ├── monitoring.py
-│           └── progress.py
-├── tests/
+│       ├── core/                           # Core functionality
+│       │   ├── database.py                 # SQL database handling
+│       │   ├── LLMBasedCrawler.py         # Main crawler implementation
+│       │   ├── DatabaseHandler.py          # Vector database (FAISS)
+│       │   └── SummaryGenerator.py         # Text summarization
+│       ├── ui/                            # User Interface
+│       │   ├── chat_app.py                # Main Streamlit app
+│       │   ├── chat_ui.py                 # Development UI
+│       │   └── login.py                   # Authentication UI
+│       └── utils/                         # Utilities
+│           ├── content_validator.py        # URL/content validation
+│           ├── data_manager.py            # Import/export handling
+│           ├── helper_functions.py         # General helpers
+│           ├── monitoring.py              # Metrics collection
+│           └── progress.py                # Progress tracking
+├── tests/                                # Test suite
 │   └── test_core/
-│       ├── test_database_handler.py
-│       ├── test_integration.py
-│       ├── test_llm_based_crawler.py
-│       └── test_summary_generator.py
-├── .github/
+│       ├── test_database_handler.py       # Vector DB tests
+│       ├── test_integration.py           # Integration tests
+│       ├── test_llm_based_crawler.py     # Crawler tests
+│       └── test_summary_generator.py     # Summarizer tests
+├── .github/                             # CI/CD
 │   └── workflows/
-│       └── Push_to_hf.yaml
-├── .gitignore
-├── LICENSE
-├── README.md
-├── Docs
-├── pyproject.toml
-├── pytest.ini
-└── setup_env.py
+│       └── Push_to_hf.yaml              # HuggingFace sync
+├── Docs/
+│   └── MiniDoc.md                       # Documentation
+├── .dockerignore                        # Docker exclusions
+├── .gitignore                          # Git exclusions
+├── Dockerfile                          # Container config
+├── LICENSE                             # MIT License
+├── README.md                          # Project documentation
+├── README_hf.md                       # HuggingFace README
+├── pyproject.toml                     # Project metadata
+├── pytest.ini                         # Test configuration
+└── setup_env.py                       # Environment setup
 ``` 
 
 ## 🧪 Testing

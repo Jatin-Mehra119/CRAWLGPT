@@ -10,32 +10,41 @@ CrawlGPT is a web content crawler with GPT-powered summarization and chat capabi
 crawlgpt/
 ├── src/
 │   └── crawlgpt/
-│       ├── core/
-│       │   ├── DatabaseHandler.py
-│       │   ├── LLMBasedCrawler.py 
-│       │   └── SummaryGenerator.py
-│       ├── ui/
-│       │   ├── chat_app.py
-│       │   └── chat_ui.py
-│       └── utils/
-│           ├── content_validator.py
-│           ├── data_manager.py
-│           ├── helper_functions.py
-│           ├── monitoring.py
-│           └── progress.py
-├── tests/
+│       ├── core/                           # Core functionality
+│       │   ├── database.py                 # SQL database handling
+│       │   ├── LLMBasedCrawler.py         # Main crawler implementation
+│       │   ├── DatabaseHandler.py          # Vector database (FAISS)
+│       │   └── SummaryGenerator.py         # Text summarization
+│       ├── ui/                            # User Interface
+│       │   ├── chat_app.py                # Main Streamlit app
+│       │   ├── chat_ui.py                 # Development UI
+│       │   └── login.py                   # Authentication UI
+│       └── utils/                         # Utilities
+│           ├── content_validator.py        # URL/content validation
+│           ├── data_manager.py            # Import/export handling
+│           ├── helper_functions.py         # General helpers
+│           ├── monitoring.py              # Metrics collection
+│           └── progress.py                # Progress tracking
+├── tests/                                # Test suite
 │   └── test_core/
-│       ├── test_database_handler.py
-│       ├── test_integration.py
-│       ├── test_llm_based_crawler.py
-│       └── test_summary_generator.py
-├── .gitignore
-├── LICENSE
-├── README.md
-├── Docs
-├── pyproject.toml
-├── pytest.ini
-└── setup_env.py
+│       ├── test_database_handler.py       # Vector DB tests
+│       ├── test_integration.py           # Integration tests
+│       ├── test_llm_based_crawler.py     # Crawler tests
+│       └── test_summary_generator.py     # Summarizer tests
+├── .github/                             # CI/CD
+│   └── workflows/
+│       └── Push_to_hf.yaml              # HuggingFace sync
+├── Docs/
+│   └── MiniDoc.md                       # Documentation
+├── .dockerignore                        # Docker exclusions
+├── .gitignore                          # Git exclusions
+├── Dockerfile                          # Container config
+├── LICENSE                             # MIT License
+├── README.md                          # Project documentation
+├── README_hf.md                       # HuggingFace README
+├── pyproject.toml                     # Project metadata
+├── pytest.ini                         # Test configuration
+└── setup_env.py                       # Environment setup
 ```
 
 ## Core Components
@@ -58,6 +67,24 @@ crawlgpt/
 -   Generates concise summaries of text chunks using Groq API
 -   Configurable model selection and parameters
 -   Handles empty input validation
+
+### [Database](https://github.com/Jatin-Mehra119/CRAWLGPT/blob/main/src/crawlgpt/core/database.py) (src/crawl/core/database.py)
+
+-   SQLAlchemy-based database handling for user management and chat history
+-   Provides secure user authentication with BCrypt password hashing
+-   Manages persistent storage of chat conversations and context  
+
+- Configuration
+    - Uses SQLite by default (`sqlite:///crawlgpt.db`)
+    - Configurable via DATABASE_URL environment variable
+    - Automatic schema creation on startup
+    - Session management with SQLAlchemy sessionmaker
+- Security Features
+    - BCrypt password hashing with PassLib
+    - Unique username enforcement
+    - Secure session handling
+    - Role-based message tracking
+
 
 ## UI Components
 
