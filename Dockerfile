@@ -1,5 +1,5 @@
 # This Dockerfile is used to build a Docker image for the CrawlGPT project using Streamlit as the front-end
-# Specifically for huggingface spaces
+# Specifically for Hugging Face Spaces
 
 # Modified Dockerfile with database support
 FROM python:3.12-slim
@@ -14,8 +14,8 @@ RUN apt-get update && apt-get install -y \
     software-properties-common \
     sudo \
     git \
-    libsqlite3-dev \  
-    sqlite3 \         
+    libsqlite3-dev \
+    sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user and set permissions
@@ -32,10 +32,9 @@ COPY pyproject.toml setup_env.py ./
 COPY src/ ./src/
 COPY tests/ ./tests/
 RUN chown -R appuser:appuser /app  # Ensure appuser owns all files
-# Gotta tweak some things in our main core code (LLMBasedCrowler.py) Comment out the following line:
-# from dotenv import load_dotenv # line 11 It is not needed in the docker container 
-# Because it's trying to load the API credentials from .env file which we don't have in the container
 
+# Define a default database path
+ENV DATABASE_PATH="/app/data/database.sqlite"
 
 # Accept the secret token as a build argument
 ARG GROQ_API_KEY
@@ -67,10 +66,8 @@ ENV PATH="/app/src:${PATH}"
 # Switch to non-root user
 USER appuser
 
-# Initialize database directory
-RUN mkdir -p /app/data && \
-    touch ${DATABASE_PATH} && \
-    chmod 644 ${DATABASE_PATH}
+# Initialize database file
+RUN touch ${DATABASE_PATH} && chmod 644 ${DATABASE_PATH}
 
 # Allow appuser to install Python packages locally (user-level installations)
 ENV PATH="/home/appuser/.local/bin:${PATH}"
