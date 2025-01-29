@@ -9,6 +9,12 @@ import re
 import time
 import logging
 from dotenv import load_dotenv
+import platform
+import asyncio
+
+# Add at the top of the file
+if platform.system() == "Windows":
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
 # Internal imports
 from src.crawlgpt.core.DatabaseHandler import VectorDatabase
@@ -127,19 +133,7 @@ class Model:
         return chunks
 
     async def extract_content_from_url(self, url: str) -> Tuple[bool, str]:
-        """
-        Extract and process content from a URL.
-        
-        Args:
-            url (str): URL to crawl and process
-            
-        Returns:
-            Tuple[bool, str]: (success status, status message)
-            
-        Example:
-            >>> success, msg = await model.extract_content_from_url("https://example.com")
-            >>> print(f"Success: {success}, Message: {msg}")
-        """
+        """Extract and process content from a URL."""
         progress = ProgressTracker(total_steps=5, operation_name="content_extraction")
         start_time = time.time()
 
@@ -155,7 +149,10 @@ class Model:
 
             # Step 3: Configure and initialize crawler
             progress.update(2, "Initializing crawler")
-            browser_config = BrowserConfig(headless=True)
+            browser_config = BrowserConfig( headless=True,
+                                            browser_type="chromium",
+                                            proxy=None
+                                            )
             crawler_config = self._get_crawler_config()
 
             # Step 4: Execute crawling
@@ -251,15 +248,7 @@ class Model:
             return error_msg
 
     def _get_crawler_config(self) -> CrawlerRunConfig:
-        """
-        Create crawler configuration.
-        
-        Returns:
-            CrawlerRunConfig: Crawler configuration object
-            
-        Note:
-            Internal method for crawler setup
-        """
+        """Create crawler configuration."""
         return CrawlerRunConfig(
             cache_mode=CacheMode.BYPASS,
             word_count_threshold=1,

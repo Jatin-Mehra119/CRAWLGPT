@@ -1,14 +1,22 @@
-# Description: Streamlit app for the chat interface of the CrawlGPT system.
+# crawlgpt/src/crawlgpt/ui/chat_app.py
+# Description: Streamlit app for the chat interface of the CrawlGPT system with user authentication
 import streamlit as st
 import asyncio
 import time
 from datetime import datetime
+import json
 from src.crawlgpt.core.LLMBasedCrawler import Model
+from src.crawlgpt.core.database import save_chat_message, get_chat_history, delete_user_chat_history, restore_chat_history
 from src.crawlgpt.utils.monitoring import MetricsCollector, Metrics
 from src.crawlgpt.utils.progress import ProgressTracker
 from src.crawlgpt.utils.data_manager import DataManager
 from src.crawlgpt.utils.content_validator import ContentValidator
-import json
+from src.crawlgpt.ui.login import show_login
+
+# Check authentication before any other processing
+if 'user' not in st.session_state:
+    show_login()
+    st.stop()  # Stop execution if not logged in
 
 # Home Page Setup 
 st.set_page_config(
@@ -29,7 +37,7 @@ if "model" not in st.session_state:
     st.session_state.model = Model()
     st.session_state.data_manager = DataManager()
     st.session_state.content_validator = ContentValidator()
-    st.session_state.messages = []  # Initialize chat messages
+    st.session_state.messages = []
     st.session_state.url_processed = False
 
 if "use_summary" not in st.session_state:
@@ -38,10 +46,52 @@ if "use_summary" not in st.session_state:
 if "metrics" not in st.session_state:
     st.session_state.metrics = MetricsCollector()
 
+# Load chat history from database
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+    # Load user's chat history from database
+    history = get_chat_history(st.session_state.user.id)
+    st.session_state.messages = [{
+        "role": msg.role,
+        "content": msg.message,
+        "context": msg.context,
+        "timestamp": msg.timestamp
+    } for msg in history]
+
 model = st.session_state.model
+
+def load_chat_history():
+    """Loads chat history and model state from database"""
+    try:
+        # Clear existing model state
+        model.clear()
+        
+        # Load messages
+        st.session_state.messages = restore_chat_history(st.session_state.user.id)
+        
+        # Rebuild model context from chat history
+        context_parts = [
+            msg['context'] for msg in st.session_state.messages 
+            if msg.get('context')
+        ]
+        model.context = "\n".join(context_parts)
+        
+        # Rebuild vector database from context
+        if model.context:
+            chunks = model.chunk_text(model.context)
+            summaries = [model.summarizer.generate_summary(chunk) for chunk in chunks]
+            model.database.add_data(chunks, summaries)
+            st.session_state.url_processed = True
+            
+        st.rerun()
+        
+    except Exception as e:
+        st.error(f"Restoration failed: {str(e)}")
 
 # Sidebar implementation
 with st.sidebar:
+    st.subheader(f"👤 User: {st.session_state.user.username}")
+    
     st.subheader("📊 System Metrics")
     metrics = st.session_state.metrics.metrics.to_dict()
     st.metric("Total Requests", metrics["total_requests"])
@@ -50,7 +100,7 @@ with st.sidebar:
     
     # RAG Settings
     st.subheader("🔧 RAG Settings")
-    st.session_state.use_summary = st.checkbox("Use Summarized RAG", value=False, help="Don't use summaization when dealing with Coding Documentation.")
+    st.session_state.use_summary = st.checkbox("Use Summarized RAG", value=False, help="Don't use summarization when dealing with Coding Documentation.")
     st.subheader("🤖 Normal LLM Settings")
     temperature = st.slider("Temperature", 0.0, 1.0, 0.7, help="Controls the randomness of the generated text. Lower values are more deterministic.")
     max_tokens = st.slider("Max Tokens", 500, 10000, 5000, help="Maximum number of tokens to generate in the response.")
@@ -114,6 +164,11 @@ with st.sidebar:
         except Exception as e:
             st.error(f"Import failed: {e}")
             st.session_state.url_processed = False
+            
+    if st.button("♻️ Restore Full Chat State"):
+        with st.spinner("Rebuilding AI context..."):
+            load_chat_history()
+        st.success("Full conversation state restored!")
 
 # URL Processing Section
 url_col1, url_col2 = st.columns([3, 1])
@@ -160,10 +215,10 @@ if process_url and url:
                             
                             st.session_state.url_processed = True
                             st.session_state.messages.append({
-                                "role": "system",
-                                "content": f"Content from {url} has been processed and is ready for queries."
-                            })
-                            st.success("Content processed successfully!")
+                                                                "role": "system",
+                                                                "content": f"Content from {url} processed",
+                                                                "context": model.context  # Store full context
+                                                            })
                         else:
                             raise Exception(msg)
                             
@@ -199,9 +254,14 @@ if chat_input := st.chat_input("Ask about the content...", disabled=not st.sessi
     with st.chat_message("user"):
         st.write(chat_input)
     
-    # Add user message to history
+    # Add user message to history and database
     st.session_state.messages.append({"role": "user", "content": chat_input})
-    
+    save_chat_message(
+        st.session_state.user.id,
+        chat_input,
+        "user",
+        model.context  # Store full context
+    )
     try:
         start_time = time.time()
         
@@ -217,9 +277,14 @@ if chat_input := st.chat_input("Ask about the content...", disabled=not st.sessi
                 )
                 st.write(response)
         
-        # Add assistant response to history
+        # Add assistant response to history and database
         st.session_state.messages.append({"role": "assistant", "content": response})
-        
+        save_chat_message(
+            st.session_state.user.id,
+            response,  # Fixed: Save the assistant's response
+            "assistant",  # Fixed: Correct role
+            model.context
+        )
         # Record metrics
         st.session_state.metrics.record_request(
             success=True,
@@ -239,10 +304,14 @@ if chat_input := st.chat_input("Ask about the content...", disabled=not st.sessi
 col1, col2 = st.columns(2)
 with col1:
     if st.button("Clear Chat History"):
-        st.session_state.messages = []
-        st.success("Chat history cleared!")
-        st.session_state.url_processed = False
-        st.rerun()
+        try:
+            delete_user_chat_history(st.session_state.user.id)
+            st.session_state.messages = []
+            st.session_state.url_processed = False
+            st.success("Chat history cleared!")
+            st.rerun()
+        except Exception as e:
+            st.error(f"Error clearing history: {e}")
 
 with col2:
     if st.button("Clear All Data"):
@@ -250,6 +319,7 @@ with col2:
             try:
                 model.clear()
                 st.session_state.messages = []
+                delete_user_chat_history(st.session_state.user.id)
                 st.session_state.url_processed = False
                 st.session_state.metrics = MetricsCollector()
                 st.success("All data cleared successfully.")
