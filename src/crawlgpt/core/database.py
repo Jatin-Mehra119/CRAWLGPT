@@ -4,6 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
 from passlib.context import CryptContext
+import os
 
 Base = declarative_base()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -27,7 +28,7 @@ class ChatHistory(Base):
     timestamp = Column(DateTime, default=datetime.utcnow)
     user = relationship("User", back_populates="chats")
 
-engine = create_engine('sqlite:///crawlgpt.db')
+engine = create_engine(os.getenv('DATABASE_URL', 'sqlite:///crawlgpt.db'))
 Base.metadata.create_all(bind=engine)
 Session = sessionmaker(bind=engine)
 

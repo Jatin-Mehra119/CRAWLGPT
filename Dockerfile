@@ -1,32 +1,37 @@
 # This Dockerfile is used to build a Docker image for the CrawlGPT project using Streamlit as the front-end
 # Specifically for huggingface spaces
 
-# Use Python 3.12 as base image
+# Modified Dockerfile with database support
 FROM python:3.12-slim
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies including Chrome/Playwright dependencies
+# Install system dependencies including SQLite and Chrome/Playwright dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
     software-properties-common \
     sudo \
     git \
+    libsqlite3-dev \  
+    sqlite3 \         
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user and set permissions
 RUN useradd -m -s /bin/bash appuser && \
     echo "appuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Set ownership for database storage
+RUN mkdir -p /app/data && chown -R appuser:appuser /app/data
 RUN mkdir -p /app/.crawl4ai && chown -R appuser:appuser /app/.crawl4ai
 RUN mkdir -p /app/exports && chown -R appuser:appuser /app/exports
 
-# Copy project files
+# Copy project files and set ownership
 COPY pyproject.toml setup_env.py ./ 
 COPY src/ ./src/
 COPY tests/ ./tests/
-
+RUN chown -R appuser:appuser /app  # Ensure appuser owns all files
 # Gotta tweak some things in our main core code (LLMBasedCrowler.py) Comment out the following line:
 # from dotenv import load_dotenv # line 11 It is not needed in the docker container 
 # Because it's trying to load the API credentials from .env file which we don't have in the container
@@ -61,6 +66,11 @@ ENV PATH="/app/src:${PATH}"
 
 # Switch to non-root user
 USER appuser
+
+# Initialize database directory
+RUN mkdir -p /app/data && \
+    touch ${DATABASE_PATH} && \
+    chmod 644 ${DATABASE_PATH}
 
 # Allow appuser to install Python packages locally (user-level installations)
 ENV PATH="/home/appuser/.local/bin:${PATH}"
