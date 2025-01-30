@@ -124,40 +124,41 @@ _Example of CRAWLGPT in action!_
 crawlgpt/
 ├── src/
 │   └── crawlgpt/
-│       ├── core/                           # Core functionality
+│       ├── core/                         # Core functionality
 │       │   ├── database.py                 # SQL database handling
-│       │   ├── LLMBasedCrawler.py         # Main crawler implementation
+│       │   ├── LLMBasedCrawler.py          # Main crawler implementation
 │       │   ├── DatabaseHandler.py          # Vector database (FAISS)
 │       │   └── SummaryGenerator.py         # Text summarization
-│       ├── ui/                            # User Interface
-│       │   ├── chat_app.py                # Main Streamlit app
-│       │   ├── chat_ui.py                 # Development UI
-│       │   └── login.py                   # Authentication UI
-│       └── utils/                         # Utilities
+│       ├── ui/                           # User Interface
+│       │   ├── chat_app.py                 # Main Streamlit app
+│       │   ├── chat_ui.py                  # Development UI
+│       │   └── login.py                    # Authentication UI
+│       └── utils/                        # Utilities
 │           ├── content_validator.py        # URL/content validation
-│           ├── data_manager.py            # Import/export handling
+│           ├── data_manager.py             # Import/export handling
 │           ├── helper_functions.py         # General helpers
-│           ├── monitoring.py              # Metrics collection
-│           └── progress.py                # Progress tracking
+│           ├── monitoring.py               # Metrics collection
+│           └── progress.py                 # Progress tracking
 ├── tests/                                # Test suite
 │   └── test_core/
 │       ├── test_database_handler.py       # Vector DB tests
-│       ├── test_integration.py           # Integration tests
-│       ├── test_llm_based_crawler.py     # Crawler tests
-│       └── test_summary_generator.py     # Summarizer tests
+│       ├── test_integration.py            # Integration tests
+│       ├── test_llm_based_crawler.py      # Crawler tests
+│       └── test_summary_generator.py      # Summarizer tests
 ├── .github/                             # CI/CD
 │   └── workflows/
 │       └── Push_to_hf.yaml              # HuggingFace sync
 ├── Docs/
-│   └── MiniDoc.md                       # Documentation
-├── .dockerignore                        # Docker exclusions
-├── .gitignore                          # Git exclusions
-├── Dockerfile                          # Container config
-├── LICENSE                             # MIT License
+│   └── MiniDoc.md                     # Documentation
+├── .dockerignore                      # Docker exclusions
+├── .gitignore                         # Git exclusions
+├── Dockerfile                         # Container config
+├── LICENSE                            # MIT License
 ├── README.md                          # Project documentation
 ├── README_hf.md                       # HuggingFace README
 ├── pyproject.toml                     # Project metadata
 ├── pytest.ini                         # Test configuration
+├── crawlgpt.db                        # Database 
 └── setup_env.py                       # Environment setup
 ``` 
 
