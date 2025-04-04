@@ -35,7 +35,10 @@ dependencies = [
     "playwright>=1.41.0",
     "asyncio>=3.4.3",
     "sqlalchemy>=2.0.37",
-    "passlib>=1.7.4"
+    "passlib>=1.7.4",
+    "flask",
+    "flask_cors",
+    "PyJWT"
 ]
 
 [project.optional-dependencies]
