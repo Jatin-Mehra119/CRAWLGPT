@@ -1,9 +1,26 @@
-from flask import Flask, request, jsonify, session
+"""
+CrawlGPT API Server
+
+This module implements a Flask-based REST API that serves as the backend for the CrawlGPT application.
+It provides endpoints for user authentication, URL content extraction, chat interaction with LLM,
+and various data management operations.
+
+The server implements:
+- User authentication with JWT tokens
+- Rate limiting for resource-intensive endpoints
+- Per-user session management
+- URL content extraction and processing
+- Chat interface with LLM models
+- History management and persistence
+- Metrics collection
+- Data import/export capabilities
+"""
+
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import asyncio
 import time
 from datetime import datetime
-import json
 import jwt
 from functools import wraps
 import os
@@ -14,7 +31,7 @@ from src.crawlgpt.core.database import save_chat_message, get_chat_history, dele
 from src.crawlgpt.utils.monitoring import MetricsCollector, Metrics
 from src.crawlgpt.utils.data_manager import DataManager
 from src.crawlgpt.utils.content_validator import ContentValidator
-from src.crawlgpt.ui.login import authenticate_user, create_user  # Assuming this function exists or can be adapted
+from src.crawlgpt.ui.login import authenticate_user, create_user
 
 app = Flask(__name__)
 CORS(app)
@@ -35,8 +52,19 @@ user_sessions = {}
 RATE_LIMIT = 10  # requests per minute
 rate_limit_data = defaultdict(list)  # stores timestamps of requests by user_id
 
-# Rate limiter decorator for AI-intensive endpoints
 def rate_limit(f):
+    """
+    Decorator that implements rate limiting for API endpoints.
+    
+    Limits each user to RATE_LIMIT requests per minute and adds appropriate
+    rate limit headers to the response.
+    
+    Args:
+        f: The function to decorate
+        
+    Returns:
+        Decorated function with rate limiting applied
+    """
     @wraps(f)
     def decorated(current_user_id, *args, **kwargs):
         # Get current time
@@ -80,8 +108,19 @@ def rate_limit(f):
     
     return decorated
 
-# Authentication decorator
 def token_required(f):
+    """
+    Decorator that enforces JWT authentication for API endpoints.
+    
+    Extracts and validates JWT token from Authorization header.
+    Creates a user session if one doesn't exist.
+    
+    Args:
+        f: The function to decorate
+        
+    Returns:
+        Decorated function with authentication required
+    """
     @wraps(f)
     def decorated(*args, **kwargs):
         token = None
@@ -108,14 +147,29 @@ def token_required(f):
         return f(current_user_id, *args, **kwargs)
     return decorated
 
-# Welcome endpoint
+# ----- PUBLIC ENDPOINTS -----
+
 @app.route('/', methods=['GET'])
 def welcome():
+    """
+    Welcome endpoint that confirms the API is running.
+    
+    Returns:
+        JSON response with welcome message
+    """
     return jsonify({'message': 'Welcome to the Crawlgpt API!'})
 
-# USER REGISTRATION
 @app.route('/api/register', methods=['POST'])
 def register():
+    """
+    User registration endpoint.
+    
+    Expects JSON with username, password, and email fields.
+    Validates inputs and creates a new user if one doesn't exist.
+    
+    Returns:
+        JSON response indicating success or failure
+    """
     data = request.json
     username = data.get('username')
     password = data.get('password')
@@ -132,9 +186,16 @@ def register():
     return jsonify({'message': 'User created successfully!'})
     
 
-# Login endpoint
 @app.route('/api/login', methods=['POST'])
 def login():
+    """
+    User login endpoint.
+    
+    Authenticates user credentials and issues a JWT token for API access.
+    
+    Returns:
+        JSON with token and user information on success, error message on failure
+    """
     auth = request.json
     
     if not auth or not auth.get('username') or not auth.get('password'):
@@ -155,11 +216,24 @@ def login():
     
     return jsonify({'token': token, 'user': {'id': user.id, 'username': user.username}})
 
-# URL processing endpoint
+# ----- PROTECTED ENDPOINTS -----
+
 @app.route('/api/process-url', methods=['POST'])
 @token_required
 @rate_limit
 def process_url(current_user_id):
+    """
+    URL content extraction endpoint.
+    
+    Extracts and processes content from the provided URL using the LLM-based crawler.
+    Content is stored in the user's session for future chat interactions.
+    
+    Args:
+        current_user_id: User ID from the authentication decorator
+        
+    Returns:
+        JSON indicating success/failure and appropriate messages
+    """
     data = request.json
     url = data.get('url')
     
@@ -222,11 +296,22 @@ def process_url(current_user_id):
     except Exception as e:
         return jsonify({'success': False, 'message': f"Error processing URL: {str(e)}"}), 500
 
-# Chat endpoint
 @app.route('/api/chat', methods=['POST'])
 @token_required
 @rate_limit
 def chat_endpoint(current_user_id):
+    """
+    Chat interaction endpoint.
+    
+    Processes user message and generates LLM response based on the previously
+    extracted content. Saves both user message and response to chat history.
+    
+    Args:
+        current_user_id: User ID from the authentication decorator
+        
+    Returns:
+        JSON with AI response or error message
+    """
     data = request.json
     user_message = data.get('message')
     temperature = data.get('temperature', 0.7)
@@ -288,10 +373,22 @@ def chat_endpoint(current_user_id):
         )
         return jsonify({'success': False, 'message': f"Error generating response: {str(e)}"}), 500
 
-# Get chat history
+# ----- HISTORY MANAGEMENT ENDPOINTS -----
+
 @app.route('/api/chat/history', methods=['GET'])
 @token_required
 def get_history(current_user_id):
+    """
+    Chat history retrieval endpoint.
+    
+    Fetches the user's chat history from the database.
+    
+    Args:
+        current_user_id: User ID from the authentication decorator
+        
+    Returns:
+        JSON with chat messages array or error message
+    """
     try:
         # Load chat history from database
         history = get_chat_history(current_user_id)
@@ -306,10 +403,20 @@ def get_history(current_user_id):
     except Exception as e:
         return jsonify({'success': False, 'message': f"Error fetching history: {str(e)}"}), 500
 
-# Clear chat history
 @app.route('/api/chat/clear', methods=['POST'])
 @token_required
 def clear_history(current_user_id):
+    """
+    Chat history clearing endpoint.
+    
+    Deletes all chat history for the current user and resets URL processing state.
+    
+    Args:
+        current_user_id: User ID from the authentication decorator
+        
+    Returns:
+        JSON indicating success/failure
+    """
     try:
         delete_user_chat_history(current_user_id)
         user_sessions[current_user_id]['url_processed'] = False
@@ -318,10 +425,21 @@ def clear_history(current_user_id):
     except Exception as e:
         return jsonify({'success': False, 'message': f"Error clearing history: {str(e)}"}), 500
 
-# Restore chat history and context
 @app.route('/api/chat/restore', methods=['POST'])
 @token_required
 def restore_history(current_user_id):
+    """
+    Chat history and context restoration endpoint.
+    
+    Rebuilds the model's internal state from previously saved chat history.
+    Reconstructs vector database from context for retrieval.
+    
+    Args:
+        current_user_id: User ID from the authentication decorator
+        
+    Returns:
+        JSON indicating success/failure
+    """
     try:
         user_session = user_sessions[current_user_id]
         model = user_session['model']
@@ -351,10 +469,22 @@ def restore_history(current_user_id):
     except Exception as e:
         return jsonify({'success': False, 'message': f"Restoration failed: {str(e)}"}), 500
 
-# Get metrics
+# ----- METRICS AND DATA MANAGEMENT ENDPOINTS -----
+
 @app.route('/api/metrics', methods=['GET'])
 @token_required
 def get_metrics(current_user_id):
+    """
+    Usage metrics retrieval endpoint.
+    
+    Provides performance and usage statistics for the current user.
+    
+    Args:
+        current_user_id: User ID from the authentication decorator
+        
+    Returns:
+        JSON with metrics data or error message
+    """
     try:
         user_session = user_sessions[current_user_id]
         metrics = user_session['metrics'].metrics.to_dict()
@@ -363,10 +493,21 @@ def get_metrics(current_user_id):
     except Exception as e:
         return jsonify({'success': False, 'message': f"Error fetching metrics: {str(e)}"}), 500
 
-# Export data
 @app.route('/api/export', methods=['GET'])
 @token_required
 def export_data(current_user_id):
+    """
+    Data export endpoint.
+    
+    Exports all user data including chat history, metrics, and vector database
+    for backup or transfer purposes.
+    
+    Args:
+        current_user_id: User ID from the authentication decorator
+        
+    Returns:
+        JSON with complete application state or error message
+    """
     try:
         user_session = user_sessions[current_user_id]
         model = user_session['model']
@@ -390,10 +531,21 @@ def export_data(current_user_id):
     except Exception as e:
         return jsonify({'success': False, 'message': f"Export failed: {str(e)}"}), 500
 
-# Import data
 @app.route('/api/import', methods=['POST'])
 @token_required
 def import_data(current_user_id):
+    """
+    Data import endpoint.
+    
+    Imports previously exported data, restoring application state.
+    Validates data structure before import to ensure integrity.
+    
+    Args:
+        current_user_id: User ID from the authentication decorator
+        
+    Returns:
+        JSON indicating success/failure
+    """
     try:
         user_session = user_sessions[current_user_id]
         model = user_session['model']
@@ -439,10 +591,22 @@ def import_data(current_user_id):
     except Exception as e:
         return jsonify({'success': False, 'message': f"Import failed: {str(e)}"}), 500
 
-# Update settings
+# ----- SETTINGS AND CONFIGURATION ENDPOINTS -----
+
 @app.route('/api/settings', methods=['POST'])
 @token_required
 def update_settings(current_user_id):
+    """
+    User settings update endpoint.
+    
+    Updates configurable options for the current user session.
+    
+    Args:
+        current_user_id: User ID from the authentication decorator
+        
+    Returns:
+        JSON indicating success/failure
+    """
     data = request.json
     user_session = user_sessions[current_user_id]
     
@@ -456,10 +620,20 @@ def update_settings(current_user_id):
     except Exception as e:
         return jsonify({'success': False, 'message': f"Error updating settings: {str(e)}"}), 500
 
-# Clear all data
 @app.route('/api/clear-all', methods=['POST'])
 @token_required
 def clear_all_data(current_user_id):
+    """
+    Complete data reset endpoint.
+    
+    Clears all user data including model state, chat history, and metrics.
+    
+    Args:
+        current_user_id: User ID from the authentication decorator
+        
+    Returns:
+        JSON indicating success/failure
+    """
     try:
         user_session = user_sessions[current_user_id]
         model = user_session['model']
@@ -475,4 +649,5 @@ def clear_all_data(current_user_id):
         return jsonify({'success': False, 'message': f"Error clearing data: {str(e)}"}), 500
 
 if __name__ == '__main__':
+    # Run the Flask application in debug mode (not for production)
     app.run(debug=True)
