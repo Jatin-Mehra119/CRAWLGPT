@@ -12,7 +12,6 @@ from dotenv import load_dotenv
 import platform
 import asyncio
 
-# Add at the top of the file
 if platform.system() == "Windows":
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 

@@ -103,8 +103,8 @@ with st.sidebar:
     st.session_state.use_summary = st.checkbox("Use Summarized RAG", value=False, help="Don't use summarization when dealing with Coding Documentation.")
     st.subheader("🤖 Normal LLM Settings")
     temperature = st.slider("Temperature", 0.0, 1.0, 0.7, help="Controls the randomness of the generated text. Lower values are more deterministic.")
-    max_tokens = st.slider("Max Tokens", 500, 10000, 5000, help="Maximum number of tokens to generate in the response.")
-    model_id = st.radio("Model ID", ['llama-3.1-8b-instant', 'llama-3.3-70b-versatile', 'mixtral-8x7b-32768'], help="Choose the model to use for generating responses.")
+    max_tokens = st.slider("Max Tokens", 500, 5000, 4500, help="Maximum number of tokens to generate in the response.")
+    model_id = st.radio("Model ID", ['llama-3.1-8b-instant', 'llama-3.3-70b-versatile', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b', ], help="Choose the model to use for generating responses.")
     
     # Export/Import Data
     st.subheader("💾 Data Management")
